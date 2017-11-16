@@ -46,7 +46,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String mLikelyPlaceAddress;
     private String mLikelyPlaceAttribution;
     private LatLng mLikelyPlaceLatLng;
-    private boolean mLocationPermissionGranted;
     private SharedPreferences mApplicationSettings;
 
     @Override
@@ -69,7 +68,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mDefaultLatLng = new LatLng(37, -122);
 
         mApplicationSettings = PreferenceManager.getDefaultSharedPreferences(this);
-        mLocationPermissionGranted = mApplicationSettings.getBoolean(LOCATION_PERMISSION_GRANTED, false);
 
     }
 
@@ -79,9 +77,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode) {
             case REQUEST_CODE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
-                mLocationPermissionGranted = grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                mApplicationSettings.edit().putBoolean(LOCATION_PERMISSION_GRANTED, mLocationPermissionGranted).apply();
+                mApplicationSettings.edit().putBoolean(LOCATION_PERMISSION_GRANTED, grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED).apply();
                 updateLocationUI();
             }
         }
@@ -124,7 +121,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         try {
-            if (mLocationPermissionGranted) {
+            if (mApplicationSettings.getBoolean(LOCATION_PERMISSION_GRANTED, false)) {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
             } else {
@@ -144,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * cases when a location is not available.
      */
         try {
-            if (mLocationPermissionGranted) {
+            if (mApplicationSettings.getBoolean(LOCATION_PERMISSION_GRANTED, false)) {
                 Task locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener() {
                     @Override
@@ -174,7 +171,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
 
-        if (mLocationPermissionGranted) {
+        if (mApplicationSettings.getBoolean(LOCATION_PERMISSION_GRANTED, false)) {
             // Get most likely place - that is, the businesses and other points of interest that
             // are the best match for the device's current location.
             @SuppressWarnings("MissingPermission") final
