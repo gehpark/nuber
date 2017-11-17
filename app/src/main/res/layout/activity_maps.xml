@@ -37,6 +37,15 @@
             android:hint="Set Drop-off"
             android:layout_below="@+id/pickup"/>
 
+        <Button
+            android:id="@+id/search_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dropoff"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:text="Do stuff"/>
+
     </RelativeLayout>
 
     <android.support.design.widget.NavigationView

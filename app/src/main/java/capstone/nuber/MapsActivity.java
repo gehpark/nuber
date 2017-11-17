@@ -4,11 +4,14 @@ import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +22,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -36,6 +40,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.io.IOException;
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
 
@@ -63,6 +70,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private String mActivityTitle;
+
+    private TextInputEditText mPickup;
+    private TextInputEditText mDropoff;
+    private Button mSearchButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +120,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getSupportActionBar().setHomeButtonEnabled(true);
 
         setupDrawer();
+
+        mPickup = findViewById(R.id.pickup);
+        mDropoff = findViewById(R.id.dropoff);
+        mSearchButton = findViewById(R.id.search_button);
+        mSearchButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String pickup = mPickup.getText().toString();
+                        String dropoff = mDropoff.getText().toString();
+
+                        LatLng pickup_ll = getLocationFromAddress(pickup); // 37.787048, -122.400154
+                        if (dropoff.isEmpty()) {
+                            // TODO
+                        } else {
+                            // TODO
+                            LatLng dropoff_ll = getLocationFromAddress(dropoff); // 40.070880, -75.100227
+                        }
+
+                    }
+                }
+        );
+    }
+
+    public LatLng getLocationFromAddress(String strAddress){
+
+        Geocoder coder = new Geocoder(this);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            address = coder.getFromLocationName(strAddress,5);
+            if (address==null) {
+                return null;
+            }
+            Address location=address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+
+            p1 = new LatLng(location.getLatitude(), (location.getLongitude()));
+
+        } catch (IOException e) {
+
+        }
+        return p1;
+
     }
 
     @Override
@@ -223,9 +280,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        updateLocationUI();
         getDeviceLocation();
         showCurrentPlace();
+        updateLocationUI();
     }
 
     private void updateLocationUI() {
@@ -302,6 +359,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 mLikelyPlaceAttribution = (String) likelyPlace.getAttributions();
                                 mLikelyPlaceLatLng = likelyPlace.getLatLng();
 
+                                String pickup = mLikelyPlaceName.concat(", ").concat(mLikelyPlaceAddress);
+                                ((TextInputEditText) mPickup).setText(pickup);
+                                (mDropoff).requestFocus();
                                 // Release the place likelihood buffer, to avoid memory leaks.
                                 likelyPlaces.release();
                             } else {
